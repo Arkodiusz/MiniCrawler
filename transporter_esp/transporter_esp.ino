@@ -5,69 +5,83 @@
 const char* ssid = "SIEC 6G";
 const char* password = "kmwtw999";
 
-const uint8_t PinServoL = 5;
-const uint8_t PinServoR = 4;
+const uint8_t pinLed = 16;
+const uint8_t pinServoL = 5;
+const uint8_t pinServoR = 4;
 
 ESP8266WebServer server(80);
 
 Servo servoL;
 Servo servoR;
 
-uint8_t FWD = 180;
-uint8_t STOP = 90;
 uint8_t BWD = 0;
+uint8_t STOP = 90;
+uint8_t FWD = 180;
 
-void setup(){  
+void controlMovement() {
+  String left = server.arg("left");
+  String right = server.arg("right");
+  
+  int valueL = validateValueOf(left);
+  int valueR = 180 - validateValueOf(right);
+
+  Serial.print("\nvalueL: ");
+  Serial.print(valueL);
+  Serial.print("\nvalueR: ");
+  Serial.print(valueR);
+
+  servoL.write(valueL);
+  servoR.write(valueR);
+  server.send(204, "");
+}
+
+int validateValueOf(String rawValue) {
+  switch (rawValue.toInt()) {
+    case 1: 
+      return FWD;
+      break;
+    case -1:
+      return BWD;
+      break;
+    default:
+      return STOP;
+  }
+}
+
+void connectToWiFi() {
+  WiFi.begin(ssid, password);
+  Serial.print("\n\nConnecting to WiFi.");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+    digitalWrite(pinLed, !digitalRead(pinLed));
+  }
+  Serial.print("\nConnected to: ");
+  Serial.print(WiFi.SSID());
+  Serial.print("\nIP address: ");
+  Serial.print(WiFi.localIP());
+  digitalWrite(pinLed, LOW);
+}
+
+void setup() {
   Serial.begin(9600);
 
-  servoL.attach(PinServoL);
-  servoL.write(STOP);  
-  servoR.attach(PinServoR);
+  pinMode(pinLed, OUTPUT);
+  digitalWrite(pinLed, HIGH);
+
+  servoL.attach(pinServoL);
+  servoL.write(STOP);
+  servoR.attach(pinServoR);
   servoR.write(STOP);
 
-  establishConnection();
+  connectToWiFi();
   
-  server.on("/stop", stopMovement);  
-  server.on("/fwd", goForward);
-  server.on("/bwd", goBackward);
-  
+  server.on("/move", controlMovement);
   server.begin();
-  
+
   delay(2000);
 }
 
 void loop() {
   server.handleClient();
-}
-
-void stopMovement() {
-  servoL.write(STOP);
-  servoR.write(STOP);
-  server.send(204, "");
-}
-
-void goForward() {
-  servoL.write(FWD);
-  servoR.write(FWD);
-  server.send(204, "");
-}
-
-void goBackward() {
-  servoL.write(BWD);
-  servoR.write(BWD);
-  server.send(204, "");
-}
-
-
-void establishConnection() {
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting to WiFi..");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.print(".");
-  }
-  Serial.print("\nConnected to the WiFi network: ");
-  Serial.print(WiFi.SSID());
-  Serial.print(" IP address: ");
-  Serial.print(WiFi.localIP());
 }
