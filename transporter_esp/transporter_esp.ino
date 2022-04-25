@@ -14,38 +14,34 @@ ESP8266WebServer server(80);
 Servo servoL;
 Servo servoR;
 
-uint8_t BWD = 0;
-uint8_t STOP = 90;
-uint8_t FWD = 180;
+const uint16_t L_STOP = 1455;
+const uint16_t R_STOP = 1435;
+const uint16_t MS_PER_SPEED_LEVEL = 20;
 
 void controlMovement() {
   String left = server.arg("left");
   String right = server.arg("right");
-  
-  int valueL = validateValueOf(left);
-  int valueR = 180 - validateValueOf(right);
-
-  Serial.print("\nvalueL: ");
-  Serial.print(valueL);
-  Serial.print("\nvalueR: ");
-  Serial.print(valueR);
-
-  servoL.write(valueL);
-  servoR.write(valueR);
+  int8_t speedLevelL = left.toInt();
+  int8_t speedLevelR = right.toInt();
+  servoController(speedLevelL, speedLevelR);
   server.send(204, "");
 }
 
-int validateValueOf(String rawValue) {
-  switch (rawValue.toInt()) {
-    case 1: 
-      return FWD;
-      break;
-    case -1:
-      return BWD;
-      break;
-    default:
-      return STOP;
-  }
+void servoController(int8_t speedLevelL, int8_t speedLevelR) {
+  int16_t speedL = speedLevelL * MS_PER_SPEED_LEVEL;
+  int16_t speedR = speedLevelR * MS_PER_SPEED_LEVEL;
+
+  Serial.print("\n LEFT: ");
+  Serial.print(speedL);  
+  Serial.print(" => ");
+  Serial.print(L_STOP + speedL);
+  Serial.print("\nRIGHT: ");  
+  Serial.print(speedR); 
+  Serial.print(" => ");  
+  Serial.print(R_STOP - speedR);
+  
+  servoL.writeMicroseconds(L_STOP + speedL);
+  servoR.writeMicroseconds(R_STOP - speedR);
 }
 
 void connectToWiFi() {
@@ -65,14 +61,14 @@ void connectToWiFi() {
 
 void setup() {
   Serial.begin(9600);
+  Serial.print("\n\n===============================");
 
   pinMode(pinLed, OUTPUT);
   digitalWrite(pinLed, HIGH);
 
   servoL.attach(pinServoL);
-  servoL.write(STOP);
   servoR.attach(pinServoR);
-  servoR.write(STOP);
+  servoController(0, 0);
 
   connectToWiFi();
   
