@@ -4,8 +4,8 @@ const IPAddress WIFI_AP_SUBNET(255,255,255,0);
 const char* WIFI_AP_SSID = "ESP_crawler_01";
 
 void setupAccessPoint() {  
-  Serial.println("ACCESS POINT");  
-  prepareWiFiModule(); 
+  prepareWiFiModule();   
+  Serial.println("ACCESS POINT");
   Serial.print("Setting soft-AP configuration... ");
   Serial.println(WiFi.softAPConfig(WIFI_AP_LOCAL_IP, WIFI_AP_GATEWAY, WIFI_AP_SUBNET) ? "Ready" : "Failed!");
 
@@ -21,9 +21,9 @@ void setupAccessPoint() {
   digitalWrite(LED_WIFI, LOW);
 }
 
-void connectToWiFi() {   
-  Serial.println("STATION");  
-  prepareWiFiModule(); 
+void connectToWiFi() {
+  prepareWiFiModule();   
+  Serial.println("STATION");
   Serial.print("Connecting.");
   WiFi.begin(WIFI_STA_SSID, WIFI_STA_PASSWORD); // wifi credentials imported from WiFiCredentials.h (not staged to git) 
   while (WiFi.status() != WL_CONNECTED) {
