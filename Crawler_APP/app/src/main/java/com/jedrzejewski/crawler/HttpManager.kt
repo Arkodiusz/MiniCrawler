@@ -3,10 +3,12 @@ package com.jedrzejewski.crawler
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 
 object HttpManager {
 
-    private const val LOCAL_IP = "192.168.44.1"
+//    private const val LOCAL_IP = "192.168.44.1"
+    private const val LOCAL_IP = "192.168.1.109"
 
     fun sendMovementRequest(queue: RequestQueue, left: Int, right: Int) {
         val url = "http://$LOCAL_IP/move?left=$left&right=$right"
@@ -17,8 +19,7 @@ object HttpManager {
         val stringRequest = StringRequest(
             Request.Method.GET,
             url,
-            { response -> System.out.println("response => $response")
-            },
+            {},
             {}
         )
         queue.add(stringRequest)
