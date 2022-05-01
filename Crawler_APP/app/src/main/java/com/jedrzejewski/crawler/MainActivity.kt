@@ -5,8 +5,11 @@ import android.os.Bundle
 import android.view.View
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.android.volley.RequestQueue
 import com.android.volley.toolbox.Volley
-
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,21 +23,25 @@ class MainActivity : AppCompatActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
         hideStatusAndNavBars()
 
-        val queue = Volley.newRequestQueue(this)
+        val volleyRequestQueue = Volley.newRequestQueue(this)
+
+        lifecycleScope.launch() {
+            processCustomRequestQueue(volleyRequestQueue)
+        }
 
         val leftSeekBar = findViewById<SeekBar>(R.id.seekBarLeft)
         leftSeekBar?.setOnSeekBarChangeListener(object :
             SeekBar.OnSeekBarChangeListener {
+
             override fun onProgressChanged(seek: SeekBar, progress: Int, fromUser: Boolean) {
                 val tempSpeedLevel = convertPercentageToRange(progress)
                 if (tempSpeedLevel != leftSpeedLevel) {
                     leftSpeedLevel = tempSpeedLevel
-                    HttpManager.sendMovementRequest(queue, leftSpeedLevel, rightSpeedLevel)
+                    enqueueRequests()
                 }
             }
 
             override fun onStartTrackingTouch(seek: SeekBar) {
-
             }
 
             override fun onStopTrackingTouch(seek: SeekBar) {
@@ -45,16 +52,16 @@ class MainActivity : AppCompatActivity() {
         val rightSeekBar = findViewById<SeekBar>(R.id.seekBarRight)
         rightSeekBar?.setOnSeekBarChangeListener(object :
             SeekBar.OnSeekBarChangeListener {
+
             override fun onProgressChanged(seek: SeekBar, progress: Int, fromUser: Boolean) {
                 val tempSpeedLevel = convertPercentageToRange(progress)
                 if (tempSpeedLevel != rightSpeedLevel) {
                     rightSpeedLevel = tempSpeedLevel
-                    HttpManager.sendMovementRequest(queue, leftSpeedLevel, rightSpeedLevel)
+                    enqueueRequests()
                 }
             }
 
             override fun onStartTrackingTouch(seek: SeekBar) {
-
             }
 
             override fun onStopTrackingTouch(seek: SeekBar) {
@@ -89,6 +96,17 @@ class MainActivity : AppCompatActivity() {
                 decorView.systemUiVisibility = flags
             }
         }
+    }
+
+    private suspend fun processCustomRequestQueue(queue: RequestQueue) {
+        while (true) {
+            CustomRequestQueue.process(queue)
+            delay(10L)
+        }
+    }
+
+    private fun enqueueRequests() {
+        CustomRequestQueue.add(Pair(leftSpeedLevel, rightSpeedLevel))
     }
 
     private fun convertPercentageToRange(progress: Int): Int {
