@@ -63,18 +63,34 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    @Override
+    override fun onPause() {
+        super.onPause()
+        sentLeftSpeedLevel = 0
+        sentRightSpeedLevel = 0
+        HttpManager.clearQueue()
+        HttpManager.sendMovementRequest(0, 0, acknowledge, reset)
+    }
+
+    private val acknowledge: (Int, Int) -> Unit = { left, right ->
+        sentLeftSpeedLevel = left
+        sentRightSpeedLevel = right
+    }
+
+    private val reset = {
+        sentLeftSpeedLevel = 0
+        sentRightSpeedLevel = 0
+    }
+
     private suspend fun processHttpRequest() {
         while (true) {
-            if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-                leftSpeedLevel = 0
-                rightSpeedLevel = 0
+            //TODO: if connection is ok
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                if (leftSpeedLevel != sentLeftSpeedLevel || rightSpeedLevel != sentRightSpeedLevel) {
+                    HttpManager.sendMovementRequest(leftSpeedLevel, rightSpeedLevel, acknowledge, reset)
+                }
             }
-            if (leftSpeedLevel != sentLeftSpeedLevel || rightSpeedLevel != sentRightSpeedLevel) {
-                HttpManager.sendMovementRequest(leftSpeedLevel, rightSpeedLevel)
-                sentLeftSpeedLevel = leftSpeedLevel
-                sentRightSpeedLevel = rightSpeedLevel
-            }
-            delay(100L)
+            delay(250)
         }
     }
 

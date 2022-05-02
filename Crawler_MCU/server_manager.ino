@@ -11,5 +11,8 @@ void handleMovementHttpRequest() {
   int8_t speedLevelL = left.toInt();
   int8_t speedLevelR = right.toInt();
   setMotorsRotation(speedLevelL, speedLevelR);
-  server.send(204, "");
+  String response = "{\"left\":" + left + ",\"right\":" + right + "}";
+  Serial.print("response => ");
+  Serial.println(response);
+  server.send(200, "text/plain", response);
 }
