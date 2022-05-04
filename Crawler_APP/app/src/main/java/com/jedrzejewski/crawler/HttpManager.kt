@@ -10,7 +10,7 @@ import org.json.JSONObject
 
 object HttpManager {
 
-    private const val LOCAL_IP = "192.168.44.1"
+    private const val ESP_ACCESS_POINT_IP = "44.44.44.1"
 //    private const val LOCAL_IP = "192.168.1.100"
 
     private lateinit var queue: RequestQueue
@@ -25,7 +25,7 @@ object HttpManager {
 
     fun sendMovementRequest(left: Int = 0, right: Int = 0, acknowledge: (Int, Int) -> Unit, reset: () -> Unit  ) {
         if (::queue.isInitialized) {
-            val url = "http://$LOCAL_IP/move?left=${left}&right=${right}"
+            val url = "http://$ESP_ACCESS_POINT_IP/move?left=${left}&right=${right}"
             println("request  => $url")
 
             val stringRequest = StringRequest(

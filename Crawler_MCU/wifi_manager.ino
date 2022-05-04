@@ -1,5 +1,5 @@
-const IPAddress WIFI_AP_LOCAL_IP(192,168,44,1);
-const IPAddress WIFI_AP_GATEWAY(192,168,44,1);
+const IPAddress WIFI_AP_LOCAL_IP(44,44,44,1);
+const IPAddress WIFI_AP_GATEWAY(44,44,44,1);
 const IPAddress WIFI_AP_SUBNET(255,255,255,0);
 const char* WIFI_AP_SSID = "ESP_crawler_01";
 

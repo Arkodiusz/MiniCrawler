@@ -25,8 +25,10 @@ void setMotorsRotation(int8_t speedLevelL, int8_t speedLevelR) {
   int16_t speedR = abs(speedLevelR * PWM_DUTY_CYCLE_PER_LEVEL);
 
   Serial.print("LEFT: ");
+  Serial.print(speedLevelL < 0 ? "-" : "");
   Serial.println(speedL);  
   Serial.print("RIGHT: ");  
+  Serial.print(speedLevelR < 0 ? "-" : "");
   Serial.println(speedR); 
 
   analogWrite(L_MOTOR_SPEED, speedL);
