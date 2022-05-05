@@ -20,6 +20,7 @@
 ESP8266WebServer server(80);
 
 unsigned long lastMillisOfLedComm;
+unsigned long lastMillisOfIncomingRequest;
 
 void setup() {
   Serial.begin(9600);
@@ -31,15 +32,16 @@ void setup() {
   } else {
     connectToWiFi();
   }  
-  setupServer(); 
+  setupServer();
+  lastMillisOfIncomingRequest = millis(); 
   
   delay(2000);
 }
 
 void loop() {
   server.handleClient();
-      
-  if (!digitalRead(LED_COMM) && (millis() > lastMillisOfLedComm + 100)) {
-    digitalWrite(LED_COMM, HIGH);
-  }
+  
+  turnOffCommunicationLedAfterBlink();
+
+  watchConnectionAvailability();
 }

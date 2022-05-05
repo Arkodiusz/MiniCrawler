@@ -15,4 +15,20 @@ void handleMovementHttpRequest() {
   Serial.print("response => ");
   Serial.println(response);
   server.send(200, "text/plain", response);
+  lastMillisOfIncomingRequest = millis();
+}
+
+void turnOffCommunicationLedAfterBlink() {
+  int blinkDuration = 100;
+  if (!digitalRead(LED_COMM) && (millis() > lastMillisOfLedComm + blinkDuration)) {
+    digitalWrite(LED_COMM, HIGH);
+  }
+}
+
+void watchConnectionAvailability() {
+  if (millis() > lastMillisOfIncomingRequest + 3000) {
+    setMotorsRotation(0, 0);
+    Serial.println("Connection not available, motors stopped.");
+    lastMillisOfIncomingRequest = millis();
+  }
 }

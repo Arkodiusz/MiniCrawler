@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.SeekBar
+import android.widget.Toast
+import android.widget.Toast.LENGTH_SHORT
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -18,8 +20,10 @@ class MainActivity : AppCompatActivity() {
     var rightSpeedLevel  = 0
     var sentLeftSpeedLevel = 0
     var sentRightSpeedLevel  = 0
+    var noRequestCounter = 0
 
-    private var isConnectedToAP = false
+    private var actualIsConnectedToAP = false
+    private var lastIsConnectedToAP = false
     private lateinit var wifiLamp : Button
 
     @Override
@@ -79,24 +83,35 @@ class MainActivity : AppCompatActivity() {
 
     private suspend fun processHttpRequestCoroutine() {
         while (true) {
-            if (isConnectedToAP && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-                if (leftSpeedLevel != sentLeftSpeedLevel || rightSpeedLevel != sentRightSpeedLevel) {
-                    HttpManager.sendMovementRequest(leftSpeedLevel, rightSpeedLevel, acknowledgeSentParameters, resetSentParameters)
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                if (actualIsConnectedToAP) {
+                    if (leftSpeedLevel != sentLeftSpeedLevel || rightSpeedLevel != sentRightSpeedLevel || noRequestCounter >= 8) {
+                        HttpManager.sendMovementRequest(leftSpeedLevel, rightSpeedLevel, acknowledgeSentParameters, resetSentParameters)
+                        noRequestCounter = 0
+                    } else {
+                        noRequestCounter++
+                    }
                 }
             }
+            println("noRequestCounter $noRequestCounter")
             delay(250)
         }
     }
 
     private suspend fun checkConnectionStatusCoroutine() {
         while (true) {
-            isConnectedToAP = ConnectionManager.isConnectedToAp()
-            if (isConnectedToAP) {
-                wifiLamp.setBackgroundColor(Color.GREEN)
-            } else {
-                wifiLamp.setBackgroundColor(Color.RED)
+            actualIsConnectedToAP = ConnectionManager.isConnectedToAp()
+            if (actualIsConnectedToAP != lastIsConnectedToAP && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                if (actualIsConnectedToAP) {
+                    wifiLamp.setBackgroundColor(Color.GREEN)
+                    Toast.makeText(this, "Connected to vehicle!", LENGTH_SHORT).show()
+                } else {
+                    wifiLamp.setBackgroundColor(Color.RED)
+                    Toast.makeText(this, "Disconnected from vehicle!", LENGTH_SHORT).show()
+                }
+                lastIsConnectedToAP = actualIsConnectedToAP
+                println("connection => $actualIsConnectedToAP, IP: ${ConnectionManager.getIpAddress()}")
             }
-            println("isConnectedToAP => $isConnectedToAP")
             delay(1000)
         }
     }

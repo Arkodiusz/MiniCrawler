@@ -6,10 +6,10 @@ import java.net.NetworkInterface
 object ConnectionManager {
 
     private const val DEMANDED_NETWORK_ID = "44.44.44"
+    private var ipAddress = ""
 
     fun isConnectedToAp() : Boolean{
-        val ipAddress = getIPAddress()
-        println("ipAddress => $ipAddress")
+        ipAddress = getIPAddress()
         val ipField = ipAddress.split(".")
         if (ipField.size < 4) return false
         val foundNetworkId = "${ipField[0]}.${ipField[1]}.${ipField[2]}"
@@ -23,5 +23,9 @@ object ConnectionManager {
             }?.let { return it.hostAddress.orEmpty() }
         }
         return ""
+    }
+
+    fun getIpAddress(): String {
+        return ipAddress
     }
 }
