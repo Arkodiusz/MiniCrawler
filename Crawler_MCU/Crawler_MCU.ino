@@ -1,9 +1,11 @@
 #include <ESP8266WebServer.h>
 
 #include "WiFiManager.h"
+#include "Motor.h"
+#include "MotorsController.h"
 
-#define LED_WIFI 2 // D4 (built in LED)
-#define LED_COMM 16 // D0 (built in LED)
+#define WIFI_LED 2 // D4 (built in LED)
+#define WIFI_MODE_SELECTOR 9 // SD2
 
 #define L_MOTOR_SPEED 5 // D1
 #define L_MOTOR_FWD 4 // D2
@@ -12,34 +14,33 @@
 #define R_MOTOR_FWD 14 // D5
 #define R_MOTOR_BWD 12 // D6
 
-#define WIFI_MODE_SELECTOR 9 // SD2
-
-#define PWM_FREQUENCY 1000
-#define PWM_RANGE 100
-#define PWM_DUTY_CYCLE_PER_LEVEL 10
+#define LED_COMM 16 // D0 (built in LED)
 
 ESP8266WebServer server(80);
 
+WiFiManager wifi(WIFI_LED, WIFI_MODE_SELECTOR);
 
-WiFiManager wifi(LED_WIFI, WIFI_MODE_SELECTOR);
+Motor motorLeft(L_MOTOR_SPEED, L_MOTOR_FWD, L_MOTOR_BWD);
+Motor motorRight(R_MOTOR_SPEED, R_MOTOR_FWD, R_MOTOR_BWD);
+MotorsController motors(motorLeft, motorRight);
 
 unsigned long lastMillisOfLedComm;
 unsigned long lastMillisOfIncomingRequest;
-unsigned long lastMillisOfMotorsSpeedChange;
-
 
 void setup() {
   Serial.begin(9600);
   Serial.println("\n\n===============================");
   
-  setupGpio();
+  pinMode(LED_COMM, OUTPUT);
   
+  digitalWrite(LED_COMM, HIGH);   
+       
   wifi.initialize();
-
-  setupServer();
+  
+  server.on("/move", handleMovementHttpRequest);  
+  server.begin();
   
   lastMillisOfIncomingRequest = millis(); 
-  lastMillisOfMotorsSpeedChange = millis(); 
   
   delay(2000);
 }
@@ -51,6 +52,35 @@ void loop() {
 
   watchConnectionAvailability();
 
-  setMotorsSpeed();
-  
+  motors.setRotation();  
+}
+
+void handleMovementHttpRequest() {
+  digitalWrite(LED_COMM, LOW);
+  lastMillisOfLedComm = millis();
+  String left = server.arg("left");
+  String right = server.arg("right");
+  int8_t speedLevelL = left.toInt();
+  int8_t speedLevelR = right.toInt();
+  motors.setTargetSpeed(speedLevelL, speedLevelR);
+  String response = "{\"left\":" + left + ",\"right\":" + right + "}";
+  Serial.print("response => ");
+  Serial.println(response);
+  server.send(200, "text/plain", response);
+  lastMillisOfIncomingRequest = millis();
+}
+
+void turnOffCommunicationLedAfterBlink() {
+  int blinkDuration = 100;
+  if (!digitalRead(LED_COMM) && (millis() > lastMillisOfLedComm + blinkDuration)) {
+    digitalWrite(LED_COMM, HIGH);
+  }
+}
+
+void watchConnectionAvailability() {
+  if (millis() > lastMillisOfIncomingRequest + 3000) {
+    motors.setTargetSpeed(0, 0);
+    Serial.println("Connection not available, motors stopped.");
+    lastMillisOfIncomingRequest = millis();
+  }
 }

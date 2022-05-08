@@ -1,0 +1,11 @@
+#ifndef PARAMS_h
+#define PARAMS_h
+
+#define PWM_FREQUENCY 1000
+#define PWM_RANGE 100
+#define PWM_DUTY_CYCLE_PER_LEVEL 10
+
+#define SPEED_CHANGE_STEP 1
+#define SPEED_CHANGE_FREQUENCY 200
+
+#endif
