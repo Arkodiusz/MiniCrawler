@@ -10,7 +10,7 @@ void handleMovementHttpRequest() {
   String right = server.arg("right");
   int8_t speedLevelL = left.toInt();
   int8_t speedLevelR = right.toInt();
-  setMotorsRotation(speedLevelL, speedLevelR);
+  setMotorsDirectionAndTargetSpeed(speedLevelL, speedLevelR);
   String response = "{\"left\":" + left + ",\"right\":" + right + "}";
   Serial.print("response => ");
   Serial.println(response);
@@ -27,7 +27,7 @@ void turnOffCommunicationLedAfterBlink() {
 
 void watchConnectionAvailability() {
   if (millis() > lastMillisOfIncomingRequest + 3000) {
-    setMotorsRotation(0, 0);
+    setMotorsDirectionAndTargetSpeed(0, 0);
     Serial.println("Connection not available, motors stopped.");
     lastMillisOfIncomingRequest = millis();
   }

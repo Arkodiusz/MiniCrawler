@@ -21,6 +21,7 @@ ESP8266WebServer server(80);
 
 unsigned long lastMillisOfLedComm;
 unsigned long lastMillisOfIncomingRequest;
+unsigned long lastMillisOfMotorsSpeedChange;
 
 void setup() {
   Serial.begin(9600);
@@ -33,7 +34,9 @@ void setup() {
     connectToWiFi();
   }  
   setupServer();
+  
   lastMillisOfIncomingRequest = millis(); 
+  lastMillisOfMotorsSpeedChange = millis(); 
   
   delay(2000);
 }
@@ -44,4 +47,7 @@ void loop() {
   turnOffCommunicationLedAfterBlink();
 
   watchConnectionAvailability();
+
+  setMotorsSpeed();
+  
 }
