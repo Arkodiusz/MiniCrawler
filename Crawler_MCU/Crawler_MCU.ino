@@ -1,5 +1,6 @@
-#include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+
+#include "WiFiManager.h"
 
 #define LED_WIFI 2 // D4 (built in LED)
 #define LED_COMM 16 // D0 (built in LED)
@@ -19,20 +20,22 @@
 
 ESP8266WebServer server(80);
 
+
+WiFiManager wifi(LED_WIFI, WIFI_MODE_SELECTOR);
+
 unsigned long lastMillisOfLedComm;
 unsigned long lastMillisOfIncomingRequest;
 unsigned long lastMillisOfMotorsSpeedChange;
+
 
 void setup() {
   Serial.begin(9600);
   Serial.println("\n\n===============================");
   
   setupGpio();
-  if (digitalRead(WIFI_MODE_SELECTOR)) {
-    setupAccessPoint();
-  } else {
-    connectToWiFi();
-  }  
+  
+  wifi.initialize();
+
   setupServer();
   
   lastMillisOfIncomingRequest = millis(); 
