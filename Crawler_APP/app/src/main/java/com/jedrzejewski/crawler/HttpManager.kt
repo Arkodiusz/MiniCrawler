@@ -43,7 +43,7 @@ object HttpManager {
                     reset()
                 }
             )
-            stringRequest.retryPolicy = DefaultRetryPolicy(200, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+            stringRequest.retryPolicy = DefaultRetryPolicy(80, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
             queue.add(stringRequest)
         }
     }

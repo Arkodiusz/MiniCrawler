@@ -15,12 +15,12 @@
 #define PWM_RANGE 100
 #define PWM_DUTY_CYCLE_PER_LEVEL 10 // % per level
 
-#define SPEED_CHANGE_STEP 2 // % per cycle  !!! USE ONLY 1, 2, 5 or 10 to avoid oscillation near zero !!!
-#define SPEED_CHANGE_FREQUENCY 500 // Hz
+#define SPEED_CHANGE_STEP 1 // % per cycle  !!! USE ONLY 1, 2, 5 or 10 to avoid oscillation near zero !!!
+#define SPEED_CHANGE_FREQUENCY 250 // Hz
 
 #define SERVER_PORT 80
 
-#define REQUEST_TIMEOUT 3000 // ms
-#define COMM_LED_BLINK_DURATION 100 // ms
+#define REQUEST_TIMEOUT 2000 // ms
+#define COMM_LED_BLINK_DURATION 50 // ms
 
 #endif

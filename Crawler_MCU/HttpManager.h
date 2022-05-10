@@ -10,8 +10,6 @@ class HttpManager {
   
   private:
     int ledPin;
-    int left;
-    int right;
     unsigned long lastMillisOfLedComm;
     unsigned long lastMillisOfIncomingRequest; 
     void turnOffCommunicationLedAfterBlink();    
@@ -19,10 +17,8 @@ class HttpManager {
   public:
     ESP8266WebServer server = ESP8266WebServer(SERVER_PORT);
     HttpManager(int ledPin);
-    void handleRequest();
-    boolean isConnectionNotAvailable();
+    void handleRequest(int (& targetSpeedValue) [2]);
     void handleClient();
-    int getParameterLeft();
-    int getParameterRight();
+    boolean isConnectionNotAvailable();
 };
 #endif

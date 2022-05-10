@@ -10,8 +10,8 @@ Motor motorRight(R_MOTOR_SPEED, R_MOTOR_FWD, R_MOTOR_BWD);
 MotorsController motors(motorLeft, motorRight);
 
 void setup() {
-  Serial.begin(9600);
-  Serial.println("\n\n===============================");
+  Serial.begin(115200);
+  Serial.println();
   wifi.initialize();
   httpManager.server.on("/move", handleMovementHttpRequest);
   httpManager.server.begin();
@@ -27,8 +27,7 @@ void loop() {
 }
 
 void handleMovementHttpRequest() {  
-  httpManager.handleRequest();  
-  int left = httpManager.getParameterLeft();
-  int right = httpManager.getParameterRight();
-  motors.setTargetSpeed(left, right);
+  int targetSpeedValue[2];
+  httpManager.handleRequest(targetSpeedValue);  
+  motors.setTargetSpeed(targetSpeedValue[0], targetSpeedValue[1]);
 }

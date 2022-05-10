@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         while (true) {
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
                 if (actualIsConnectedToAP) {
-                    if (leftSpeedLevel != sentLeftSpeedLevel || rightSpeedLevel != sentRightSpeedLevel || noRequestCounter >= 8) {
+                    if (leftSpeedLevel != sentLeftSpeedLevel || rightSpeedLevel != sentRightSpeedLevel || noRequestCounter >= 10) {
                         HttpManager.sendMovementRequest(leftSpeedLevel, rightSpeedLevel, acknowledgeSentParameters, resetSentParameters)
                         noRequestCounter = 0
                     } else {
@@ -93,8 +93,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-            println("noRequestCounter $noRequestCounter")
-            delay(250)
+            delay(100)
         }
     }
 

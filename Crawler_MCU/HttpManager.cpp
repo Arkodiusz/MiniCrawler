@@ -8,18 +8,18 @@ HttpManager::HttpManager(int ledPin) {
   digitalWrite(ledPin, HIGH);   
 }
 
-void HttpManager::handleRequest() {
+void HttpManager::handleRequest(int (& targetSpeedValue) [2]) {
   digitalWrite(ledPin, LOW);
   lastMillisOfLedComm = millis();  
   lastMillisOfIncomingRequest = millis();
   String sLeft = server.arg("left");
   String sRight = server.arg("right");
-  left = sLeft.toInt();
-  right = sRight.toInt();
   String response = "{\"left\":" + sLeft + ",\"right\":" + sRight + "}";
   Serial.print("response => ");
   Serial.println(response);
   server.send(200, "text/plain", response);
+  targetSpeedValue[0] = sLeft.toInt();
+  targetSpeedValue[1] = sRight.toInt();
 }
 
 void HttpManager::handleClient() {
@@ -34,14 +34,6 @@ boolean HttpManager::isConnectionNotAvailable() {
     return true;
   }
   return false;
-}
-
-int HttpManager::getParameterLeft() {
-  return left;
-}
-
-int HttpManager::getParameterRight() {
-  return right;
 }
 
 void HttpManager::turnOffCommunicationLedAfterBlink() {
