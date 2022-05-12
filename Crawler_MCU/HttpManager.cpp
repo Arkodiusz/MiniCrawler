@@ -5,30 +5,33 @@ HttpManager::HttpManager(int ledPin) {
   lastMillisOfLedComm = millis();
   lastMillisOfIncomingRequest = millis();
   pinMode(ledPin, OUTPUT);  
-  digitalWrite(ledPin, HIGH);   
+  turnOffLed();   
 }
 
-void HttpManager::handleRequest(int (& targetSpeedValue) [2]) {
-  digitalWrite(ledPin, LOW);
+void HttpManager::handleRequest(AsyncWebServerRequest *request, int (& targetSpeedValue) [2]) {
+  turnOnLed();
   lastMillisOfLedComm = millis();  
-  lastMillisOfIncomingRequest = millis();
-  String sLeft = server.arg("left");
-  String sRight = server.arg("right");
+  lastMillisOfIncomingRequest = millis();  
+  String sLeft = "0";
+  String sRight = "0";
+  if (request->hasParam("left") && request->hasParam("right")) {
+    sLeft = request->getParam("left")->value();
+    sRight = request->getParam("right")->value();
+  }  
   String response = "{\"left\":" + sLeft + ",\"right\":" + sRight + "}";
   Serial.print("response => ");
   Serial.println(response);
-  server.send(200, "text/plain", response);
+  request->send(200, "text/plain", response);
   targetSpeedValue[0] = sLeft.toInt();
   targetSpeedValue[1] = sRight.toInt();
 }
 
-void HttpManager::handleClient() {
-  server.handleClient();  
+void HttpManager::maintenance() {
   turnOffCommunicationLedAfterBlink();
 }
 
 boolean HttpManager::isConnectionNotAvailable() {
-  if (millis() > lastMillisOfIncomingRequest + REQUEST_TIMEOUT) {
+  if (millis() >= lastMillisOfIncomingRequest + REQUEST_TIMEOUT) {
     Serial.println("Connection not available, motors stopped.");
     lastMillisOfIncomingRequest = millis();
     return true;
@@ -37,7 +40,15 @@ boolean HttpManager::isConnectionNotAvailable() {
 }
 
 void HttpManager::turnOffCommunicationLedAfterBlink() {
-  if (!digitalRead(ledPin) && (millis() > lastMillisOfLedComm + COMM_LED_BLINK_DURATION)) {
-    digitalWrite(ledPin, HIGH);
+  if (!digitalRead(ledPin) && millis() >= lastMillisOfLedComm + COMM_LED_BLINK_DURATION) {
+    turnOffLed();
   }
+}
+
+void HttpManager::turnOnLed() {
+  digitalWrite(ledPin, LOW);
+}
+
+void HttpManager::turnOffLed() {
+  digitalWrite(ledPin, HIGH);
 }

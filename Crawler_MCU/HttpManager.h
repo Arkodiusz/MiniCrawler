@@ -2,7 +2,8 @@
 #define HttpManager_h
 
 #include <Arduino.h>
-#include <ESP8266WebServer.h>
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 
 #include "PARAMS.h"
 
@@ -12,13 +13,15 @@ class HttpManager {
     int ledPin;
     unsigned long lastMillisOfLedComm;
     unsigned long lastMillisOfIncomingRequest; 
-    void turnOffCommunicationLedAfterBlink();    
+    void turnOffCommunicationLedAfterBlink();
+    void turnOffLed();
+    void turnOnLed();  
     
   public:
-    ESP8266WebServer server = ESP8266WebServer(SERVER_PORT);
+    AsyncWebServer server = AsyncWebServer(SERVER_PORT);
     HttpManager(int ledPin);
-    void handleRequest(int (& targetSpeedValue) [2]);
-    void handleClient();
+    void handleRequest(AsyncWebServerRequest *request, int (& targetSpeedValue) [2]);
+    void maintenance();
     boolean isConnectionNotAvailable();
 };
 #endif

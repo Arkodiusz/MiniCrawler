@@ -13,21 +13,23 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
   wifi.initialize();
-  httpManager.server.on("/move", handleMovementHttpRequest);
+  httpManager.server.on("/move", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    handleMovementHttpRequest(request);
+  });
   httpManager.server.begin();
   delay(2000);
 }
 
 void loop() {
-  httpManager.handleClient();
+  httpManager.maintenance();
   if (httpManager.isConnectionNotAvailable()) {
     motors.setTargetSpeed(0, 0);
   }
   motors.setRotation();  
 }
 
-void handleMovementHttpRequest() {  
+void handleMovementHttpRequest(AsyncWebServerRequest *request) {  
   int targetSpeedValue[2];
-  httpManager.handleRequest(targetSpeedValue);  
+  httpManager.handleRequest(request, targetSpeedValue);  
   motors.setTargetSpeed(targetSpeedValue[0], targetSpeedValue[1]);
 }

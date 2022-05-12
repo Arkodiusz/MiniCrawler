@@ -26,16 +26,19 @@ void WiFiManager::initialize() {
 
 void WiFiManager::setupAccessPoint() {
   Serial.println("ACCESS POINT");
-  Serial.print("Setting soft-AP configuration... ");
+  Serial.print("Setting soft-AP configuration... ");  
+  IPAddress apIp(SOFT_AP_IP);
+  IPAddress apGateway(SOFT_AP_GATEWAY);
+  IPAddress apSubnet(SOFT_AP_SUBNET);
   Serial.println(WiFi.softAPConfig(apIp, apGateway, apSubnet) ? "Ready" : "Failed!");
 
   Serial.print("Setting soft-AP SSID... ");
-  Serial.println(WiFi.softAP(apSsid, apPassword) ? "Ready" : "Failed!");
+  Serial.println(WiFi.softAP(SOFT_AP_SSID, SOFT_AP_PASSWORD) ? "Ready" : "Failed!");
 
   Serial.print("SSID: ");
-  Serial.println(apSsid);
+  Serial.println(SOFT_AP_SSID);
   Serial.print("PASS: ");
-  Serial.println(apPassword);
+  Serial.println(SOFT_AP_PASSWORD);
   Serial.print("IP: ");
   Serial.println(WiFi.softAPIP());
 }
@@ -43,7 +46,7 @@ void WiFiManager::setupAccessPoint() {
 void WiFiManager::connectToWiFi() {
   Serial.println("STATION");
   Serial.print("Connecting.");
-  WiFi.begin(staSsid, staPassword); // wifi credentials imported from WiFiCredentials.h (not staged to git)
+  WiFi.begin(WIFI_STATION_SSID, WIFI_STATION_PASSWORD); // wifi credentials imported from WiFiCredentials.h (not staged to git)
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");

@@ -23,4 +23,10 @@
 #define REQUEST_TIMEOUT 2000 // ms
 #define COMM_LED_BLINK_DURATION 50 // ms
 
+#define SOFT_AP_SSID "esp_crawler_1"
+#define SOFT_AP_PASSWORD ""
+#define SOFT_AP_IP 44,44,44,1
+#define SOFT_AP_GATEWAY 44,44,44,1
+#define SOFT_AP_SUBNET 255,255,255,0
+
 #endif
