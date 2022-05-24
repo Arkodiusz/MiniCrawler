@@ -1,30 +1,21 @@
 package com.jedrzejewski.crawler
 
 import android.content.pm.ActivityInfo
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
 import android.widget.SeekBar
 import android.widget.Toast
-import android.widget.Toast.LENGTH_SHORT
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.delay
+import com.jedrzejewski.crawler.Crawler.Companion.actualIsConnectedToAP
+import com.jedrzejewski.crawler.Crawler.Companion.leftSpeedLevel
+import com.jedrzejewski.crawler.Crawler.Companion.rightSpeedLevel
+import com.jedrzejewski.crawler.Crawler.Companion.sentLeftSpeedLevel
+import com.jedrzejewski.crawler.Crawler.Companion.sentRightSpeedLevel
+import com.jedrzejewski.crawler.Crawler.Companion.wifiLamp
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
-
-    var leftSpeedLevel = 0
-    var rightSpeedLevel  = 0
-    var sentLeftSpeedLevel = 0
-    var sentRightSpeedLevel  = 0
-    var noRequestCounter = 0
-
-    private var actualIsConnectedToAP = false
-    private var lastIsConnectedToAP = false
-    private lateinit var wifiLamp : Button
 
     @Override
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,22 +25,20 @@ class MainActivity : AppCompatActivity() {
         hideStatusAndNavBars()
 
         HttpManager.setupQueue(this)
-
         lifecycleScope.launch() {
-            processHttpRequestCoroutine()
+            HttpRequestCoroutine.start()
         }
 
         wifiLamp = findViewById(R.id.button)
-
         lifecycleScope.launch() {
-            checkConnectionStatusCoroutine()
+            ConnectionStatusCoroutine.start()
         }
 
         val leftSeekBar = findViewById<SeekBar>(R.id.seekBarLeft)
         leftSeekBar?.setOnSeekBarChangeListener(object :
             SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seek: SeekBar, progress: Int, fromUser: Boolean) {
-                leftSpeedLevel = convertPercentageToRange(progress)
+                leftSpeedLevel = progress
             }
             override fun onStartTrackingTouch(seek: SeekBar) {
             }
@@ -62,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         rightSeekBar?.setOnSeekBarChangeListener(object :
             SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seek: SeekBar, progress: Int, fromUser: Boolean) {
-                rightSpeedLevel = convertPercentageToRange(progress)
+                rightSpeedLevel = progress
             }
             override fun onStartTrackingTouch(seek: SeekBar) {
             }
@@ -72,63 +61,14 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+
     @Override
     override fun onPause() {
         super.onPause()
         sentLeftSpeedLevel = 0
         sentRightSpeedLevel = 0
         HttpManager.clearQueue()
-        HttpManager.sendMovementRequest(0, 0, acknowledgeSentParameters, resetSentParameters)
-    }
-
-    private suspend fun processHttpRequestCoroutine() {
-        while (true) {
-            if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-                if (actualIsConnectedToAP) {
-                    if (leftSpeedLevel != sentLeftSpeedLevel || rightSpeedLevel != sentRightSpeedLevel || noRequestCounter >= 8) {
-                        HttpManager.sendMovementRequest(leftSpeedLevel, rightSpeedLevel, acknowledgeSentParameters, resetSentParameters)
-                        noRequestCounter = 0
-                    } else {
-                        noRequestCounter++
-                    }
-                }
-            }
-            println("noRequestCounter $noRequestCounter")
-            delay(250)
-        }
-    }
-
-    private suspend fun checkConnectionStatusCoroutine() {
-        while (true) {
-            actualIsConnectedToAP = ConnectionManager.isConnectedToAp()
-            if (actualIsConnectedToAP != lastIsConnectedToAP && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-                if (actualIsConnectedToAP) {
-                    wifiLamp.setBackgroundColor(Color.GREEN)
-                    Toast.makeText(this, "Connected to vehicle!", LENGTH_SHORT).show()
-                } else {
-                    wifiLamp.setBackgroundColor(Color.RED)
-                    Toast.makeText(this, "Disconnected from vehicle!", LENGTH_SHORT).show()
-                }
-                lastIsConnectedToAP = actualIsConnectedToAP
-                println("connection => $actualIsConnectedToAP, IP: ${ConnectionManager.getIpAddress()}")
-            }
-            delay(1000)
-        }
-    }
-
-    private val acknowledgeSentParameters: (Int, Int) -> Unit = { left, right ->
-        sentLeftSpeedLevel = left
-        sentRightSpeedLevel = right
-    }
-
-    private val resetSentParameters = {
-        sentLeftSpeedLevel = 0
-        sentRightSpeedLevel = 0
-    }
-
-    private fun convertPercentageToRange(progress: Int): Int {
-        //converts percentage to range from -10 to 10
-        return (progress/100.0*20 - 10).toInt()
+        HttpManager.sendMovementRequest(0, 0)
     }
 
     @Override
@@ -157,5 +97,9 @@ class MainActivity : AppCompatActivity() {
                 decorView.systemUiVisibility = flags
             }
         }
+    }
+
+    fun toast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
